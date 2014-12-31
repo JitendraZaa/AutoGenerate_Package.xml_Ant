@@ -1,0 +1,236 @@
+<!--
+    Author  :   Jitendra Zaa
+    Date    :   12/31/2014
+    Address :   http://JitendraZaa.com
+-->
+<project name="Generate Package.xml" default="testPackageXML" basedir="." xmlns:sf="antlib:com.salesforce">
+    
+    <!-- 
+        Import AntContrib 
+        Download it from - http://mvnrepository.com/artifact/ant-contrib/ant-contrib/1.0b3 
+    --> 
+      <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+          <pathelement location="${basedir}/lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+      </taskdef>
+       
+    <property file="GeneratePackage_xml.properties"/>
+    <property environment="env"/>
+ 
+  
+    <macrodef name="Package_fetchFolderContents"> 
+        <attribute name="folderName"/>
+        <attribute name="componentType"/>
+        <attribute name="orgName"/> 
+        <attribute name="sfUserName"/>
+        <attribute name="sfPassword"/>
+        <attribute name="sfServerURL"/>  
+        
+        <sequential> 
+            
+            <sf:listMetadata
+                    username="@{sfUserName}"
+                    password="@{sfPassword}" 
+                    serverurl="@{sfServerURL}"
+                    metadataType="@{componentType}" 
+                    folder="@{folderName}"
+                    resultFilePath="tmp/@{orgName}-@{componentType}-@{folderName}.log"/>
+ 
+            <if>
+                <!-- Execute only if file created -->
+                <available file="tmp/@{orgName}-@{componentType}-@{folderName}.log"/>
+                <then>
+                    <loadfile srcfile="tmp/@{orgName}-@{componentType}-@{folderName}.log" property="@{orgName}.@{componentType}.@{folderName}" >
+                        <filterchain> 
+                            <ignoreblank/>
+                            <linecontains negate="false">
+                                <contains value="FileName:"/>
+                            </linecontains>
+                             
+                            <prefixlines prefix="&lt;members&gt;"/>
+                            <suffixlines suffix="&lt;/members&gt;"/> 
+                            
+                            <tokenfilter> 
+                                <replacestring from="FileName: reports/" to=""/>
+                                <replacestring from="FileName: documents/" to=""/>
+                                <replacestring from="FileName: email/" to=""/> 
+                                <replacestring from="FileName: dashboards/" to=""/>  
+                                <replacestring from=".report" to=""/> 
+                                <replacestring from=".email" to=""/> 
+                                <replacestring from=".dashboard" to=""/> 
+                            </tokenfilter>
+                        </filterchain> 
+                    </loadfile> 
+                     
+                    <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.@{componentType}" append="true"> 
+                        ${@{orgName}.@{componentType}.@{folderName}}
+                     </concat>
+                    <!-- <echo> Extracted Report Names - ${@{orgName}.@{componentType}.@{folderName}} </echo> -->
+               </then>
+           </if>
+        </sequential>    
+    </macrodef>
+	
+    <macrodef name="Package_computeFolderName">
+        <attribute name="sfUserName"/>
+        <attribute name="sfPassword"/>
+        <attribute name="sfServerURL"/>   
+        <attribute name="metadataType"/> 
+        <attribute name="tmpFolderPath"/>   
+        <attribute name="componentType"/>  
+        <attribute name="orgName"/> 
+          
+        <sequential>   
+             
+            <sf:listMetadata
+                    username="@{sfUserName}"
+                    password="@{sfPassword}" 
+                    serverurl="@{sfServerURL}"
+                    metadataType="@{metadataType}" 
+                    resultFilePath="@{tmpFolderPath}"/>
+            <echo> Output file for sf:listMetadata - @{tmpFolderPath} </echo>
+             
+            <loadfile srcfile="@{tmpFolderPath}" property="@{orgName}.@{metadataType}.onlyFolderName" >
+                <filterchain> 
+                    <ignoreblank/>
+                    <linecontains negate="false">
+                        <contains value="FileName"/>
+                    </linecontains>  
+                    <tokenfilter>
+                        <replacestring from="FileName: reports/" to=""/>
+                        <replacestring from="FileName: documents/" to=""/>
+                        <replacestring from="FileName: email/" to=""/> 
+                        <replacestring from="FileName: dashboards/" to=""/>  
+                        <replacestring from=" " to=""/>
+                    </tokenfilter>
+                </filterchain> 
+            </loadfile>  
+                    
+            <for param="line" list="${@{orgName}.@{metadataType}.onlyFolderName}" delimiter="${line.separator}">
+              <sequential> 
+                <echo> Folder - @{line} </echo>
+  
+                <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.@{componentType}" append="true">
+                    &lt;members&gt; @{line} &lt;/members&gt; 
+                </concat>
+                
+                <Package_fetchFolderContents 
+                    folderName="@{line}" 
+                    componentType="@{componentType}" 
+                    orgName="@{orgName}" 
+                    sfusername="@{sfUserName}"
+                    sfPassword="@{sfPassword}" 
+                    sfServerURL="@{sfServerURL}" /> 
+                    
+              </sequential>
+            </for> 
+        </sequential>
+     </macrodef>
+     
+    <macrodef name="GeneratePackage_xml">
+        <attribute name="sfUserName"/>
+        <attribute name="sfPassword"/>
+        <attribute name="sfServerURL"/> 
+        <!-- This attribute decides where to copy Package.xml -->
+        <attribute name="packageXMLPath"/>  
+        <attribute name="orgName"/> 
+        
+        <sequential>
+             <!-- Delete All files first else it will append to existing old file -->
+            <delete file="tmp/@{orgName}.Package.xml.Snnipet.Dashboard"/>
+            <delete file="tmp/@{orgName}.Package.xml.Snnipet.Report"/>
+            <delete file="tmp/@{orgName}.Package.xml.Snnipet.EmailTemplate"/>
+            <delete file="tmp/@{orgName}.Package.xml.Snnipet.Document"/>
+            
+            <!-- Create Fresh Files -->
+            <touch file="tmp/@{orgName}.Package.xml.Snnipet.Dashboard"/>
+            <touch file="tmp/@{orgName}.Package.xml.Snnipet.Report"/>
+            <touch file="tmp/@{orgName}.Package.xml.Snnipet.EmailTemplate"/>
+            <touch file="tmp/@{orgName}.Package.xml.Snnipet.Document"/>
+            
+            <!-- Empty Content in each file -->
+            <property name="blankVal" value=""/> 
+            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Dashboard" append="true"> ${blankVal} </concat>
+            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Report" append="true"> ${blankVal} </concat>
+            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.EmailTemplate" append="true"> ${blankVal} </concat>
+            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Document" append="true"> ${blankVal} </concat>
+            
+             
+            <!-- 
+                Imp Step :
+                1. We must assign Password to property and then pass to other Macro else it will ignore
+                   all occurrences of '$' in password
+                2. Property Name must be unique so safer to add Org Name also
+            -->
+            <property name="sfPassword.prop.@{orgName}" value="@{sfPassword}"/> 
+            
+            <Package_computeFolderName 
+                sfUserName="@{sfUserName}"
+                sfPassword="$${sfPassword.prop.@{orgName}}" 
+                sfServerURL="@{sfServerURL}"
+                metadataType="DashboardFolder"
+                componentType = "Dashboard"                
+                tmpFolderPath = "tmp/@{orgName}.DashboardFolders.log" 
+                orgName="@{orgName}" 
+            /> 
+             
+             
+            <Package_computeFolderName 
+                sfUserName="@{sfUserName}"
+                sfPassword="$${sfPassword.prop.@{orgName}}" 
+                sfServerURL="@{sfServerURL}"
+                metadataType="ReportFolder"  
+                componentType="Report"
+                tmpFolderPath = "tmp/@{orgName}.ReportFolders.log" 
+                orgName="@{orgName}" 
+            />  
+            
+            <Package_computeFolderName 
+                sfUserName="@{sfUserName}"
+                sfPassword="$${sfPassword.prop.@{orgName}}" 
+                sfServerURL="@{sfServerURL}"
+                metadataType="EmailFolder" 
+                componentType="EmailTemplate"
+                tmpFolderPath = "tmp/@{orgName}.EmailFolders.log" 
+                orgName="@{orgName}" 
+            />
+               
+            <Package_computeFolderName 
+                sfUserName="@{sfUserName}"
+                sfPassword="$${sfPassword.prop.@{orgName}}" 
+                sfServerURL="@{sfServerURL}"
+                metadataType="DocumentFolder" 
+                componentType = "Document" 
+                tmpFolderPath = "tmp/@{orgName}.DocumentFolders.log" 
+                orgName="@{orgName}" 
+            /> 
+            
+            <!-- Load Generated File content which has Snippet of Package.xml in Property -->
+            <loadfile property="@{orgName}.DashboardFolder.log.edit" srcFile="tmp/@{orgName}.Package.xml.Snnipet.Dashboard" failonerror="false"/>
+            <loadfile property="@{orgName}.ReportFolder.log.edit" srcFile="tmp/@{orgName}.Package.xml.Snnipet.Report" failonerror="false"/> 
+            <loadfile property="@{orgName}.EmailFolder.log.edit" srcFile="tmp/@{orgName}.Package.xml.Snnipet.EmailTemplate" failonerror="false"/>
+            <loadfile property="@{orgName}.DocumentFolder.log.edit" srcFile="tmp/@{orgName}.Package.xml.Snnipet.Document" failonerror="false"/>
+            
+            <copy file="${package.xml.template}" tofile="@{packageXMLPath}" overwrite="true" failonerror="true"/> 
+            <replace file="@{packageXMLPath}">
+                <replacefilter token="_replaceReportMembersTag_" value="${@{orgName}.ReportFolder.log.edit}"/> 
+                <replacefilter token="_replaceEmailTemplateMembersTag_" value="${@{orgName}.EmailFolder.log.edit}"/> 
+                <replacefilter token="_replaceDashboardMembersTag_" value="${@{orgName}.DashboardFolder.log.edit}"/> 
+                <replacefilter token="_replaceDocumentMembersTag_" value="${@{orgName}.DocumentFolder.log.edit}"/> 
+            </replace> 
+            
+        </sequential> 
+    </macrodef>
+    
+    <target name="testPackageXML"> 
+        <GeneratePackage_xml
+            sfUserName = "${sf.username}" 
+            sfPassword = "$${sf.password}"
+            sfServerURL = "${sfPRO.serverurl}"
+            packageXMLPath = "${basedir}/${sf.xmlPath}/Package.xml" 
+            orgName="${sf.Name}"  />
+            
+    </target> 
+ 
+</project>

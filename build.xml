@@ -1,0 +1,8 @@
+<!--
+    Author  :   Jitendra Zaa
+    Date    :   12/31/2014
+    Address :   http://JitendraZaa.com
+-->
+<project name="Generate Package.xml subfile" default="testPackageXML" basedir="." xmlns:sf="antlib:com.salesforce">
+    <import file="GeneratePackage_xml.xml" as="complete"/>
+</project>
