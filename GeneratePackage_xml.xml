@@ -12,7 +12,7 @@
 	</target>
 	
 	<!-- Use this empty proxy setting outside Proxy Required network -->
-	<target name="proxy1">
+	<target name="noproxy">
 	</target>
     
     <!-- 
@@ -237,7 +237,7 @@
         </sequential> 
     </macrodef>
     
-    <target name="testPackageXML" depends="proxy"> <!-- Change to proxy1 if do not want to use proxy -->
+    <target name="testPackageXML" depends="noproxy"> <!-- Change to proxy if do not want to use proxy -->
 		<!-- Create tmp folder if missing -->
 		<mkdir dir="tmp"/>
         <GeneratePackage_xml
