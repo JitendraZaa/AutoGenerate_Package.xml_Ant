@@ -9,7 +9,7 @@
         <name>AccountOwnerSharingRule</name>
     </types>
     <types>
-        <members>Account_Opportunity_Analytic_snapshot</members>
+        <members>*</members>
         <name>AnalyticSnapshot</name>
     </types>
     <types>
@@ -96,16 +96,13 @@
         <name>CustomTab</name>
     </types>
     <types>
-_replaceDashboardMembersTag_
-        <name>Dashboard</name>
+_replaceDashboardMembersTag_        <name>Dashboard</name>
     </types>
     <types>
-_replaceDocumentMembersTag_
-        <name>Document</name>
+_replaceDocumentMembersTag_        <name>Document</name>
     </types>
     <types>
-_replaceEmailTemplateMembersTag_
-        <name>EmailTemplate</name>
+_replaceEmailTemplateMembersTag_        <name>EmailTemplate</name>
     </types>
     <types>
         <members>*</members>
@@ -152,8 +149,7 @@ _replaceEmailTemplateMembersTag_
         <name>RemoteSiteSetting</name>
     </types>
     <types>
-_replaceReportMembersTag_
-        <name>Report</name>
+_replaceReportMembersTag_        <name>Report</name>
     </types>
     <types>
         <members>*</members>
@@ -175,5 +171,5 @@ _replaceReportMembersTag_
         <members>*</members>
         <name>Settings</name>
     </types>
-    <version>28.0</version>
+    <version>38.0</version>
 </Package>

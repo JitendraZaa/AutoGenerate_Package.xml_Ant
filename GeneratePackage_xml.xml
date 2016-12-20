@@ -2,11 +2,21 @@
     Author  :   Jitendra Zaa
     Date    :   12/31/2014
     Address :   http://JitendraZaa.com
+	Version :   1.1 - fixed package.xml formating issues, added proxy settings, tmp folder creation. Pawel Wozniak 12/01/2016
 -->
 <project name="Generate Package.xml" default="testPackageXML" basedir="." xmlns:sf="antlib:com.salesforce">
+
+	<!-- Use this proxy when in Proxy required network -->
+	<target name="proxy">
+		<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"  />
+	</target>
+	
+	<!-- Use this empty proxy setting outside Proxy Required network -->
+	<target name="noproxy">
+	</target>
     
     <!-- 
-        Import AntContrib 
+        Import AntContrib. It is needed to add For loop support
         Download it from - http://mvnrepository.com/artifact/ant-contrib/ant-contrib/1.0b3 
     --> 
       <taskdef resource="net/sf/antcontrib/antlib.xml">
@@ -17,8 +27,9 @@
        
     <property file="GeneratePackage_xml.properties"/>
     <property environment="env"/>
+	<property name="tab" value="    "/> 
  
-  
+	<!-- Get folders content -->
     <macrodef name="Package_fetchFolderContents"> 
         <attribute name="folderName"/>
         <attribute name="componentType"/>
@@ -28,7 +39,6 @@
         <attribute name="sfServerURL"/>  
         
         <sequential> 
-            
             <sf:listMetadata
                     username="@{sfUserName}"
                     password="@{sfPassword}" 
@@ -42,9 +52,10 @@
                 <available file="tmp/@{orgName}-@{componentType}-@{folderName}.log"/>
                 <then>
                     <loadfile srcfile="tmp/@{orgName}-@{componentType}-@{folderName}.log" property="@{orgName}.@{componentType}.@{folderName}" >
-                        <filterchain> 
-                            <ignoreblank/>
-                            <linecontains negate="false">
+                        <filterchain>
+							<ignoreblank/>
+							<trim/>
+                            <linecontains>
                                 <contains value="FileName:"/>
                             </linecontains>
                              
@@ -58,20 +69,24 @@
                                 <replacestring from="FileName: dashboards/" to=""/>  
                                 <replacestring from=".report" to=""/> 
                                 <replacestring from=".email" to=""/> 
-                                <replacestring from=".dashboard" to=""/> 
+                                <replacestring from=".dashboard" to=""/>
                             </tokenfilter>
                         </filterchain> 
                     </loadfile> 
-                     
-                    <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.@{componentType}" append="true"> 
-                        ${@{orgName}.@{componentType}.@{folderName}}
-                     </concat>
+					
+					<!-- Write filtered content to snippet file -->
+					<for param="line" list="${@{orgName}.@{componentType}.@{folderName}}" delimiter="${line.separator}">
+						<sequential>						
+							<concat destfile="tmp/@{orgName}.Package.xml.Snnipet.@{componentType}" append="true" >${tab}${tab}@{line}${line.separator}</concat>
+						</sequential>
+					</for>
                     <!-- <echo> Extracted Report Names - ${@{orgName}.@{componentType}.@{folderName}} </echo> -->
                </then>
            </if>
         </sequential>    
     </macrodef>
 	
+	<!-- Get the folder name -->
     <macrodef name="Package_computeFolderName">
         <attribute name="sfUserName"/>
         <attribute name="sfPassword"/>
@@ -82,17 +97,18 @@
         <attribute name="orgName"/> 
           
         <sequential>   
-             
             <sf:listMetadata
                     username="@{sfUserName}"
                     password="@{sfPassword}" 
                     serverurl="@{sfServerURL}"
                     metadataType="@{metadataType}" 
                     resultFilePath="@{tmpFolderPath}"/>
-            <echo> Output file for sf:listMetadata - @{tmpFolderPath} </echo>
+					
+            <echo>Output file for sf:listMetadata - @{tmpFolderPath}</echo>
              
             <loadfile srcfile="@{tmpFolderPath}" property="@{orgName}.@{metadataType}.onlyFolderName" >
                 <filterchain> 
+					<trim/>
                     <ignoreblank/>
                     <linecontains negate="false">
                         <contains value="FileName"/>
@@ -109,11 +125,9 @@
                     
             <for param="line" list="${@{orgName}.@{metadataType}.onlyFolderName}" delimiter="${line.separator}">
               <sequential> 
-                <echo> Folder - @{line} </echo>
+                <echo>Folder - @{line}</echo>
   
-                <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.@{componentType}" append="true">
-                    &lt;members&gt; @{line} &lt;/members&gt; 
-                </concat>
+                <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.@{componentType}" append="true">${tab}${tab}&lt;members&gt;@{line}&lt;/members&gt;${line.separator}</concat>
                 
                 <Package_fetchFolderContents 
                     folderName="@{line}" 
@@ -151,10 +165,10 @@
             
             <!-- Empty Content in each file -->
             <property name="blankVal" value=""/> 
-            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Dashboard" append="true"> ${blankVal} </concat>
-            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Report" append="true"> ${blankVal} </concat>
-            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.EmailTemplate" append="true"> ${blankVal} </concat>
-            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Document" append="true"> ${blankVal} </concat>
+            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Dashboard" append="true">${blankVal}</concat>
+            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Report" append="true">${blankVal}</concat>
+            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.EmailTemplate" append="true">${blankVal}</concat>
+            <concat destfile="tmp/@{orgName}.Package.xml.Snnipet.Document" append="true">${blankVal}</concat>
             
              
             <!-- 
@@ -223,11 +237,13 @@
         </sequential> 
     </macrodef>
     
-    <target name="testPackageXML"> 
+    <target name="testPackageXML" depends="noproxy"> <!-- Change to proxy if do not want to use proxy -->
+		<!-- Create tmp folder if missing -->
+		<mkdir dir="tmp"/>
         <GeneratePackage_xml
             sfUserName = "${sf.username}" 
             sfPassword = "$${sf.password}"
-            sfServerURL = "${sfPRO.serverurl}"
+            sfServerURL = "${sf.serverurl}"
             packageXMLPath = "${basedir}/${sf.xmlPath}/Package.xml" 
             orgName="${sf.Name}"  />
             
