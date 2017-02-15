@@ -2,7 +2,7 @@
     Author  :   Jitendra Zaa
     Date    :   12/31/2014
     Address :   http://JitendraZaa.com
-	Version :   1.1 - fixed package.xml formating issues, added proxy settings, tmp folder creation. Pawel Wozniak 12/01/2016
+    Version :   1.2 Pawel Wozniak 13Feb2017
 -->
 <project name="Generate Package.xml" default="testPackageXML" basedir="." xmlns:sf="antlib:com.salesforce">
 
@@ -28,6 +28,7 @@
     <property file="GeneratePackage_xml.properties"/>
     <property environment="env"/>
 	<property name="tab" value="    "/> 
+	
  
 	<!-- Get folders content -->
     <macrodef name="Package_fetchFolderContents"> 
@@ -67,6 +68,7 @@
                                 <replacestring from="FileName: documents/" to=""/>
                                 <replacestring from="FileName: email/" to=""/> 
                                 <replacestring from="FileName: dashboards/" to=""/>  
+                                <replacestring from="FileName: unfiled$public" to="unfiled$public"/>
                                 <replacestring from=".report" to=""/> 
                                 <replacestring from=".email" to=""/> 
                                 <replacestring from=".dashboard" to=""/>
@@ -118,6 +120,7 @@
                         <replacestring from="FileName: documents/" to=""/>
                         <replacestring from="FileName: email/" to=""/> 
                         <replacestring from="FileName: dashboards/" to=""/>  
+                        <replacestring from="FileName: unfiled$public" to="unfiled$public"/>
                         <replacestring from=" " to=""/>
                     </tokenfilter>
                 </filterchain> 
