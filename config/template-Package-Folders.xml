@@ -34,8 +34,12 @@
         <name>ApprovalProcess</name>
     </types>
     <types>
+       <members>*</members>
+       <name>AppMenu</name>
+    </types>
+    <types>
         <members>*</members>
-        <name>AssignmentRule</name>
+        <name>AssignmentRules</name>
     </types>
     <types>
         <members>*</members>
