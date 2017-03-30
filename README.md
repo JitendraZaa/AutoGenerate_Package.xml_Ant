@@ -13,3 +13,6 @@ Auto generate Package.xml file using ANT Script. Get All Folder and file names i
 * Open Command prompt
 * Navigate to folder where "build.xml" is present
 *  execute command : "Ant" or "Ant testPackageXML"
+
+**Thanks to contributors**
+* [PawelWozniak](https://github.com/PawelWozniak)
