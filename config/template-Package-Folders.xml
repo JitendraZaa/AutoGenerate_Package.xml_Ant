@@ -186,6 +186,9 @@ _replaceEmailTemplateMembersTag_        <name>EmailTemplate</name>
         <name>EscalationRules</name>
     </types>
     <types>
+      <members>*</members>
+      <name>FlexiPage<name>
+    <types>
         <members>*</members>
         <name>Flow</name>
     </types>
