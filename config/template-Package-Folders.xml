@@ -352,5 +352,5 @@ _replaceReportMembersTag_        <name>Report</name>
         <members>*</members>
         <name>Settings</name>
     </types>
-    <version>38.0</version>
+    <version>41.0</version>
 </Package>
