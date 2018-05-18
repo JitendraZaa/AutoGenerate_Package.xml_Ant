@@ -189,6 +189,7 @@ _replaceEmailTemplateMembersTag_        <name>EmailTemplate</name>
       <members>*</members>
       <name>FlexiPage</name>
     </types>
+    <types>
         <members>*</members>
         <name>Flow</name>
     </types>
