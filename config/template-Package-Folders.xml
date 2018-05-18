@@ -186,6 +186,10 @@ _replaceEmailTemplateMembersTag_        <name>EmailTemplate</name>
         <name>EscalationRules</name>
     </types>
     <types>
+      <members>*</members>
+      <name>FlexiPage</name>
+    </types>
+    <types>
         <members>*</members>
         <name>Flow</name>
     </types>
@@ -349,5 +353,5 @@ _replaceReportMembersTag_        <name>Report</name>
         <members>*</members>
         <name>Settings</name>
     </types>
-    <version>38.0</version>
+    <version>41.0</version>
 </Package>
